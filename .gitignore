@@ -1,0 +1,14 @@
+# Ignora i file dati
+*.csv
+*.tsv
+*.tsv.gz
+datasets/source_imdb/*
+datasets/source_kaggle/*
+
+# Mantieni le cartelle vuote per la struttura
+!datasets/**/.gitkeep
+
+# Ignora file di ambiente e configurazioni sensibili
+venv/
+.env
+__pycache__/
