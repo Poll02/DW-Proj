@@ -58,7 +58,13 @@ SELECT
     CAST(r."numVotes" AS INT) AS imdb_votes,
     
     -- TMDB metrics
-    CAST(k."vote_average" AS NUMERIC(3,1)) AS tmdb_rating,
+    -- Replace the tmdb_rating logic with:
+    CASE 
+        WHEN CAST(k."vote_count" AS INT) > 0 
+            AND CAST(k."vote_average" AS NUMERIC(3,1)) BETWEEN 1.0 AND 10.0
+        THEN CAST(k."vote_average" AS NUMERIC(3,1))
+        ELSE NULL 
+    END AS tmdb_rating,
     CAST(k."vote_count" AS INT) AS tmdb_votes
 
 FROM staging.kaggle_movies_metadata k
