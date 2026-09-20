@@ -161,9 +161,73 @@ def chart_4_continent_performance():
     plt.savefig(f'{output_dir}/04_continent_performance.png', dpi=300)
     plt.close()
 
+def chart_5_runtime_impact():
+    print("Generating Chart 5: Runtime Impact on Ratings and Profit...")
+    query = """
+    SELECT 
+        CASE 
+            WHEN runtime < 90 THEN 'Short (< 90m)'
+            WHEN runtime BETWEEN 90 AND 120 THEN 'Standard (90m-120m)'
+            WHEN runtime BETWEEN 121 AND 150 THEN 'Long (121m-150m)'
+            ELSE 'Epic (> 150m)'
+        END AS runtime_tier,
+        ROUND(AVG(profit) / 1000000, 2) AS avg_profit_m,
+        ROUND(AVG(imdb_rating), 2) AS avg_rating
+    FROM dw.fact_movie_performance
+    WHERE runtime > 0 AND profit IS NOT NULL AND imdb_rating IS NOT NULL
+    GROUP BY runtime_tier
+    ORDER BY avg_rating ASC;
+    """
+    df = pd.read_sql(query, engine)
+    
+    fig, ax1 = plt.subplots(figsize=(9, 5))
+    
+    color = '#17becf'
+    ax1.set_xlabel('Runtime Tier')
+    ax1.set_ylabel('Average Profit ($M)', color=color)
+    bars = ax1.bar(df['runtime_tier'], df['avg_profit_m'], color=color, alpha=0.7, width=0.5)
+    ax1.tick_params(axis='y', labelcolor=color)
+    
+    ax2 = ax1.twinx()
+    color = '#d62728'
+    ax2.set_ylabel('Average IMDb Rating', color=color)
+    ax2.plot(df['runtime_tier'], df['avg_rating'], color=color, marker='s', linewidth=2.5)
+    ax2.tick_params(axis='y', labelcolor=color)
+    
+    plt.title('Movie Runtime Impact on Profit and IMDb Rating', fontsize=13, weight='bold')
+    plt.tight_layout()
+    plt.savefig(f'{output_dir}/05_runtime_impact.png', dpi=300)
+    plt.close()
+
+def chart_6_votes_vs_profit():
+    print("Generating Chart 6: Votes vs Profit Correlation...")
+    query = """
+    SELECT 
+        imdb_votes,
+        ROUND(profit / 1000000, 2) AS profit_m
+    FROM dw.fact_movie_performance
+    WHERE profit IS NOT NULL AND imdb_votes > 50000 AND profit > 0
+    """
+    df = pd.read_sql(query, engine)
+    
+    plt.figure(figsize=(9, 6))
+    sns.regplot(data=df, x='imdb_votes', y='profit_m', 
+                scatter_kws={'alpha':0.4, 'color':'#2ca02c'}, 
+                line_kws={'color':'#d62728', 'linewidth':2})
+    
+    plt.title('Correlation: IMDb Votes vs Profit ($M) (Votes > 50k)', fontsize=13, weight='bold')
+    plt.xlabel('Number of IMDb Votes')
+    plt.ylabel('Profit ($M)')
+    
+    plt.tight_layout()
+    plt.savefig(f'{output_dir}/06_votes_vs_profit.png', dpi=300)
+    plt.close()
+
 if __name__ == "__main__":
     chart_1_profit_by_genre()
     chart_2_decade_trends()
     chart_3_rating_comparison()
     chart_4_continent_performance()
+    chart_5_runtime_impact()
+    chart_6_votes_vs_profit()
     print(f"\nAll charts exported successfully to {output_dir}/")
