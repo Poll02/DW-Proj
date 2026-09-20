@@ -12,3 +12,4 @@ datasets/source_kaggle/*
 venv/
 .env
 __pycache__/
+Study_Guide.pdf

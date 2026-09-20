@@ -15,16 +15,16 @@ DB_NAME = os.getenv("DB_NAME")
 engine = create_engine(f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}')
 
 def load_file_to_staging(file_path, table_name, separator=','):
-    print(f"Inizio caricamento di {file_path} in staging.{table_name}...")
+    print(f"Starting to load {file_path} into staging.{table_name}...")
     try:
-        # Il chunksize divide il file in blocchi da 100.000 righe per non saturare la RAM
+        # Chunksize divide the file into smaller parts to avoid memory issues
         chunk_size = 100000
         for chunk in pd.read_csv(file_path, sep=separator, chunksize=chunk_size, low_memory=False):
-            # if_exists='append' accoda i dati, index=False evita di creare una colonna indice inutile
+            # if_exists='append' ensures that if the table already exists, new data will be appended to it
             chunk.to_sql(name=table_name, schema='staging', con=engine, if_exists='append', index=False)
-        print(f"✅ Caricamento completato per {table_name}!\n")
+        print(f"Completed loading {table_name}!\n")
     except Exception as e:
-        print(f"❌ Errore durante il caricamento di {table_name}: {e}\n")
+        print(f"Error occurred while loading {table_name}: {e}\n")
 
 if __name__ == "__main__":
     # KAGGLE Datasets 
