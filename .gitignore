@@ -13,3 +13,5 @@ venv/
 .env
 __pycache__/
 Study_Guide.pdf
+.DS_Store
+*.DS_Store
